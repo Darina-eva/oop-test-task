@@ -1,190 +1,86 @@
-from constants import MAX_LECTURER_GRADE, MIN_LECTURER_GRADE
+from courses import Student, Lecturer, Reviewer
+from utils import calculate_average_hw_grade, calculate_average_lecture_grade
 
 
-class Student:
+def main():
+    student1 = Student('Иван', 'Иванов', 'мужской')
+    student2 = Student('Мария', 'Петрова', 'женский')
+    
+    reviewer1 = Reviewer('Алексей', 'Сидоров')
+    reviewer2 = Reviewer('Елена', 'Козлова')
+    
+    lecturer1 = Lecturer('Петр', 'Смирнов')
+    lecturer2 = Lecturer('Ольга', 'Васильева')
+    
+    student1.add_course('Python')
+    student1.add_course('Git')
+    student2.add_course('Python')
+    student2.add_course('SQL')
+    
+    lecturer1.attach_to_course('Python')
+    lecturer1.attach_to_course('Git')
+    lecturer2.attach_to_course('Python')
+    lecturer2.attach_to_course('SQL')
+    
+    reviewer1.attach_to_course('Python')
+    reviewer1.attach_to_course('Git')
+    reviewer2.attach_to_course('Python')
+    reviewer2.attach_to_course('SQL')
+    
+    reviewer1.rate_homework(student1, 'Python', 9)
+    reviewer1.rate_homework(student1, 'Python', 10)
+    reviewer1.rate_homework(student1, 'Git', 8)
+    reviewer2.rate_homework(student2, 'Python', 7)
+    reviewer2.rate_homework(student2, 'Python', 8)
+    reviewer2.rate_homework(student2, 'SQL', 9)
+    
+    student1.rate_lecturer(lecturer1, 'Python', 9)
+    student1.rate_lecturer(lecturer1, 'Git', 10)
+    student1.rate_lecturer(lecturer2, 'Python', 8)
+    student2.rate_lecturer(lecturer1, 'Python', 7)
+    student2.rate_lecturer(lecturer2, 'Python', 9)
+    student2.rate_lecturer(lecturer2, 'SQL', 10)
+    
+    student1.finish_course('Git')
+    student2.finish_course('SQL')
+    
+    print("=== Информация о студентах ===")
+    print(student1)
+    print()
+    print(student2)
+    print()
+    
+    print("=== Информация о рецензентах ===")
+    print(reviewer1)
+    print()
+    print(reviewer2)
+    print()
+    
+    print("=== Информация о лекторах ===")
+    print(lecturer1)
+    print()
+    print(lecturer2)
+    print()
+    
+    print("=== Сравнение лекторов ===")
+    print(f"lecturer1 == lecturer2: {lecturer1 == lecturer2}")
+    print(f"lecturer1 != lecturer2: {lecturer1 != lecturer2}")
+    print(f"lecturer1 < lecturer2: {lecturer1 < lecturer2}")
+    print(f"lecturer1 > lecturer2: {lecturer1 > lecturer2}")
+    print(f"lecturer1 <= lecturer2: {lecturer1 <= lecturer2}")
+    print(f"lecturer1 >= lecturer2: {lecturer1 >= lecturer2}")
+    print()
 
-    def __init__(self, name, surname, gender):
-        self.name = name
-        self.surname = surname
-        self.gender = gender
-        self.finished_courses = []
-        self.courses_in_progress = []
-        self.grades = {}
+    students_list = [student1, student2]
+    lecturers_list = [lecturer1, lecturer2]
     
-    def add_course(self, course):
-        if course in self.courses_in_progress:
-            raise ValueError(f'The student already attends {course}')
-        
-        self.courses_in_progress.append(course)
+    python_hw_avg = calculate_average_hw_grade(students_list, 'Python')
+    python_lecture_avg = calculate_average_lecture_grade(lecturers_list, 'Python')
     
-    def finish_course(self, course):
-        if course not in self.courses_in_progress:
-            raise ValueError(f'The student does not attend {course}')
-        
-        index_to_remove = self.courses_in_progress.index(course)
-        finished_course = self.courses_in_progress.pop(index_to_remove)
-        self.finished_courses.append(finished_course)
-    
-    def rate_lecturer(self, lecturer, course, grade):
-        if not isinstance(lecturer, Lecturer):
-            raise ValueError(f'Given object is not an instance of class Lecturer')
-        if course not in lecturer.courses_attached:
-            raise ValueError(f'Lecturer does not belong to {course}')
-        if course not in self.courses_in_progress or course not in self.finished_courses:
-            raise ValueError('This student has never attended provided course, therefore you cannot rate a lecturer')
-        if grade < MIN_LECTURER_GRADE or grade > MAX_LECTURER_GRADE:
-            raise ValueError(f'Grade should be from {MIN_LECTURER_GRADE} to {MAX_LECTURER_GRADE}. Given grade: {grade}')
-        
-        if course in lecturer.grades:
-            lecturer.grades[course] += [grade]
-        else:
-            lecturer.grades[course] = [grade]
-    
-    def get_average_grade(self):
-        average_grade = 0
-    
-        for _, grades in self.grades.items():
-            average_grade += sum(grades)
-    
-        return average_grade
-    
-    def __str__(self):
-        average_grade = self.get_average_grade()
-        return f"Имя: {self.name}\n" +\
-               f"Фамилия: {self.surname}\n" +\
-               f"Средняя оценка за домашние задания: {average_grade}\n" +\
-               f"Курсы в процессе изучения: {', '.join(self.courses_in_progress)}\n" +\
-               f"Завершенные курсы: {', '.join(self.finished_courses)}"
-    
-    def __str__(self):
-        average_grade = self.get_average_grade()
-        return f"Имя: {self.name}\n" +\
-               f"Фамилия: {self.surname}\n" +\
-               f"Средняя оценка за лекции: {average_grade}"
-
-    def __eq__(self, other):
-        if not isinstance(other, Lecturer):
-            return NotImplemented
-
-        average_grade = self.get_average_grade()
-        other_grade = other.get_average_grade()
-        return average_grade == other_grade
-    
-    def __ne__(self, other):
-        return not (self == other)
-    
-    def __lt__(self, other):
-        if not isinstance(other, Lecturer):
-            return NotImplemented
-
-        average_grade = self.get_average_grade()
-        other_grade = other.get_average_grade()
-        return average_grade < other_grade
-    
-    def __gt__(self, other):
-        if not isinstance(other, Lecturer):
-            return NotImplemented
-
-        average_grade = self.get_average_grade()
-        other_grade = other.get_average_grade()
-        return average_grade > other_grade
-
-    def __le__(self, other):
-        return self < other or self == other
-    
-    def __ge__(self, other):
-        return self > other or self == other
+    print("=== Средние оценки по курсам ===")
+    print(f"Средняя оценка за домашние задания по курсу Python: {python_hw_avg:.2f}")
+    print(f"Средняя оценка за лекции по курсу Python: {python_lecture_avg:.2f}")
 
 
-class Mentor:
-
-    def __init__(self, name, surname):
-        self.name = name
-        self.surname = surname
-        self.courses_attached = []
-    
-    def attach_to_course(self, course):
-        if course in self.courses_attached:
-            raise ValueError(f'{self} is already in this course')
-
-        self.courses_attached.append(course)
-    
-    def remove_from_course(self, course):
-        if course not in self.courses_attached:
-            raise ValueError(f'This mentor does not belong to {course}')
-        
-        index_to_remove = self.courses_attached.index(course)
-        del self.courses_attached[index_to_remove]
-
-
-class Lecturer(Mentor):
-    
-    def __init__(self, name, surname):
-        self.grades = {}
-        super().__init__(name, surname)
-    
-    def get_average_grade(self):
-        average_grade = 0
-    
-        for _, grades in self.grades.items():
-            average_grade += sum(grades)
-    
-        return average_grade
-
-    def __str__(self):
-        average_grade = self.get_average_grade()
-        return f"Имя: {self.name}\n" +\
-               f"Фамилия: {self.surname}\n" +\
-               f"Средняя оценка за лекции: {average_grade}"
-
-    def __eq__(self, other):
-        if not isinstance(other, Lecturer):
-            return NotImplemented
-
-        average_grade = self.get_average_grade()
-        other_grade = other.get_average_grade()
-        return average_grade == other_grade
-    
-    def __ne__(self, other):
-        return not (self == other)
-    
-    def __lt__(self, other):
-        if not isinstance(other, Lecturer):
-            return NotImplemented
-
-        average_grade = self.get_average_grade()
-        other_grade = other.get_average_grade()
-        return average_grade < other_grade
-    
-    def __gt__(self, other):
-        if not isinstance(other, Lecturer):
-            return NotImplemented
-
-        average_grade = self.get_average_grade()
-        other_grade = other.get_average_grade()
-        return average_grade > other_grade
-
-    def __le__(self, other):
-        return self < other or self == other
-    
-    def __ge__(self, other):
-        return self > other or self == other
-
-
-class Reviewer(Mentor):
-    
-    def rate_homework(self, student, course, grade):
-        if not isinstance(student, Student):
-            raise ValueError(f'Given object is not an instance of class Student')
-        if course not in self.courses_attached:
-            raise ValueError(f'Reviewer does not belong to {course}')
-        if course not in student.courses_in_progress:
-            raise ValueError(f'Student does not attend {course}')
-
-        if course in student.grades:
-            student.grades[course] += [grade]
-        else:
-            student.grades[course] = [grade]
-    
-    def __str__(self):
-        return f"Имя: {self.name}\nФамилия: {self.surname}"
+if __name__ == '__main__':
+    main()
